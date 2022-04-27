@@ -7,6 +7,6 @@ We need to modify output structure to write file.
 ![image](https://github.com/quoctuan-iot/Simple_Text_File_Processor/blob/main/Gui.png)
 
 ## Result
-Download file and run script. 
+Download file and run script. python Simple_Text_File_Processor.py
 ![image](https://github.com/quoctuan-iot/Simple_Text_File_Processor/blob/main/Output1.png)
 ![image](https://github.com/quoctuan-iot/Simple_Text_File_Processor/blob/main/Output2.png)
