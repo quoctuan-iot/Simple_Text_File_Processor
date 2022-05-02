@@ -1,81 +1,88 @@
-# Author: TuanTran 
+# Author: TuanTran
 # Github: https://github.com/quoctuan-iot
 # Email: quoctuan.iot@gmail.com
 
 from __future__ import barry_as_FLUFL
+from posixpath import split
 from tkinter import *
 import os
 from tkinter.font import BOLD
 import tkinter as tk
 from tkinter import filedialog as fd
-from tkinter.messagebox import showwarning,showinfo, showerror
-
+from tkinter.messagebox import showwarning, showinfo, showerror
 
 # Hide console when using with tkinter
-#import win32gui, win32con
-#hide = win32gui.GetForegroundWindow()
-#win32gui.ShowWindow(hide , win32con.SW_HIDE)
+import win32gui
+import win32con
+hide = win32gui.GetForegroundWindow()
+win32gui.ShowWindow(hide, win32con.SW_HIDE)
 
 class FileProcessor(tk.Tk):
     def __init__(self):
         super().__init__()
-
         self.windowWidth = 700
         self.windowHeight = 400
         self.radioVar = IntVar()
-
         self.selectedFolder = True
         self.selectedFileOrFolder = False
+
         self.flagTxt = False
         self.flagWxt = False
+
         self.listFileTxt = []
         self.listFileWxt = []
         self.folderSelection = ''
         self.fileSelection = ''
-        
         self.title('File Processor - Generator')
-        self.resizable(False,False)
+        self.resizable(False, False)
         self.showScreenCenter()
-        #self.attributes('-toolwindow', True)
 
         # Creating a frames
         self.frameTitle = Frame(self)
-        self.frameTitle.pack(padx=30,pady=30)
+        self.frameTitle.pack(padx=30, pady=30)
 
-        self.frameChose = Frame(self,highlightbackground='black', highlightthickness=2)
-        self.frameChose.pack(padx=30,pady=10)
+        self.frameChose = Frame(
+            self, highlightbackground='black', highlightthickness=2)
+        self.frameChose.pack(padx=30, pady=10)
 
         self.frameStatus = Frame(self)
-        self.frameStatus.pack(padx=30,pady=10)
+        self.frameStatus.pack(padx=30, pady=10)
 
         self.frameButton = Frame(self)
-        self.frameButton.pack(padx=30,pady=30)
+        self.frameButton.pack(padx=30, pady=30)
 
         # Creating a title
-        self.labelTitle = Label(self.frameTitle,text='File Processor/Generator',font=('Arial',30,BOLD))
-        self.labelTitle.grid(row=0,column=0)
+        self.labelTitle = Label(
+            self.frameTitle, text='File Processor/Generator', font=('Arial', 30, BOLD))
+        self.labelTitle.grid(row=0, column=0)
 
         # Crateing a label chose radioButton
-        self.labelChose = Label(self.frameChose,text='Chose:',font=('Arial',15))
-        self.labelChose.grid(column=0,row=1)
+        self.labelChose = Label(
+            self.frameChose, text='Chose:', font=('Arial', 15))
+        self.labelChose.grid(column=0, row=1)
 
-        self.radioFolder = Radiobutton(self.frameChose,text='Folder (Default)',variable=self.radioVar,value=1,command = self.callRadioChose, font=('Arial',15))
+        self.radioFolder = Radiobutton(self.frameChose, text='Folder (Default)',
+                                       variable=self.radioVar, value=1, command=self.callRadioChose, font=('Arial', 15))
         self.radioFolder.select()
-        self.radioFolder.grid(column=1,row=1,sticky='w')
+        self.radioFolder.grid(column=1, row=1, sticky='w')
 
-        self.radioFile = Radiobutton(self.frameChose,text='File',variable=self.radioVar,value=0,command = self.callRadioChose, font=('Arial',15))
-        self.radioFile.grid(column=1,row=2,sticky='w')
-        
+        self.radioFile = Radiobutton(self.frameChose, text='File', variable=self.radioVar,
+                                     value=0, command=self.callRadioChose, font=('Arial', 15))
+        self.radioFile.grid(column=1, row=2, sticky='w')
+
         # Creating a label status
-        self.labelStatus = Label(self.frameStatus,font=('Arial',9),width=100,height=2,bg='white',anchor=W)
-        self.labelStatus.grid(column=0,row=0)
+        self.labelStatus = Label(self.frameStatus, font=(
+            'Arial', 9), width=100, height=2, bg='white', anchor=W)
+        self.labelStatus.grid(column=0, row=0)
 
         # Creating a button
-        self.buttonSelection = Button(self.frameButton,text='Browse Folder or File',font=('Arial',15),command=self.callButtonBrowse)
-        self.buttonSelection.grid(column=0,row = 0,padx=20)
+        self.buttonSelection = Button(self.frameButton, text='Browse Folder or File', font=(
+            'Arial', 15), command=self.callButtonBrowse)
+        self.buttonSelection.grid(column=0, row=0, padx=20)
 
-        self.buttonStart = Button(self.frameButton,text='Start',font=('Arial',15),command=self.callButtonStart)
-        self.buttonStart.grid(column=1,row = 0,padx=20)
+        self.buttonStart = Button(self.frameButton, text='Start', font=(
+            'Arial', 15), command=self.callButtonStart)
+        self.buttonStart.grid(column=1, row=0, padx=20)
 
     def showScreenCenter(self):
         # Getting screen width and height
@@ -107,50 +114,107 @@ class FileProcessor(tk.Tk):
             # Clean label status
             self.labelStatus.config(text='')
 
-            showinfo(title = 'Infor',message='The file is generated completely')
+            # Rename
+            self.renameFileOutput()
+
+            showinfo(title='Infor', message='The file is generated completely')
 
         else:
-            showwarning(title = 'Warning',message='Please select folder of file')
-            
+            showwarning(title='Warning',
+                        message='Please select folder of file')
+
         # Reset flag selection file or folder
         self.selectedFileOrFolder = False
 
     def callButtonBrowse(self):
-        # Handle button browse click event
+        # Reset list file
+        self.listFileTxt = []
+        self.listFileWxt = []
+        self.folderSelection = ''
+        self.labelStatus.config(text='')
+
         if (self.selectedFolder):
             self.folderSelection = fd.askdirectory()
 
             if (self.folderSelection == ''):
-                showwarning(title='Warning',message='Please chose folder')
+                showwarning(title='Warning', message='Please chose folder')
             else:
                 # Update flag selection file or folder
                 self.selectedFileOrFolder = True
 
                 if (self.checkFileInputExist()):
-                    self.labelStatus.config(text = self.folderSelection)
-            
+                    self.labelStatus.config(text=self.folderSelection)
+                else:
+                    self.selectedFileOrFolder = False
+
         else:
             self.folderSelection = ''
-            self.filetypes = (('All files','*.*'),('Text files','*.txt'),
-                                ('Write files','*.wxt'))
+            self.filetypes = (('All files', '*.*'), ('Text files', '*.txt'),
+                              ('Write files', '*.wxt'))
 
             self.fileSelection = fd.askopenfilenames(
-                                    title='Open files',initialdir='/',
-                                    filetypes=self.filetypes)
+                title='Open files', initialdir='/',
+                filetypes=self.filetypes)
 
             if (self.fileSelection == ''):
-                showwarning(title='Warning',message='Please chose files')
+                showwarning(title='Warning', message='Please chose files')
 
             else:
                 # Update flag selection file or folder
                 self.selectedFileOrFolder = True
-
-                if (self.checkFileInputExist()):
-                    self.labelStatus.config(text = '{},{}'.format(self.listFileTxt,self.listFileWxt))
-                    for item in self.fileSelection[0].split('/')[:-1]:
-                      self.folderSelection = self.folderSelection + item + '/'
-                self.folderSelection = self.folderSelection[:-1]
+                for item in self.fileSelection[0].split('/')[:-1]:
+                        self.folderSelection = self.folderSelection + item + '/'
                 
+                if (self.checkFileWxtExist()):
+                    self.labelStatus.config(text='{},{}'.format(
+                        self.listFileTxt, self.listFileWxt))
+                    
+                else:
+                    self.selectedFileOrFolder = False
+
+                self.folderSelection = self.folderSelection[:-1]
+
+    def checkFileBakExist(self):
+        for file in self.listFileTxt:
+            pathFileBak = self.folderSelection + "/"+ file.split('.')[0]+('.bak')
+            if os.path.exists(pathFileBak):
+                pathFiletxt = self.folderSelection + "/"+ file.split('.')[0]+('.txt')
+                if os.path.exists(pathFiletxt):
+                    os.remove(pathFiletxt)
+                pathFileSrt = self.folderSelection + "/"+ file.split('.')[0]+('.srt')
+                if os.path.exists(pathFileSrt):
+                    os.remove(pathFileSrt)
+                pathFileBak = self.folderSelection + "/"+ file.split('.')[0]+('.bak')
+                pathFileTxt = self.folderSelection + "/"+ file.split('.')[0]+('.txt')
+                if os.path.exists(pathFileBak):
+                    os.rename(pathFileBak,pathFileTxt)
+
+    def checkFileWxtExist(self):
+        if (self.selectedFolder == False):
+            for file in self.fileSelection:
+                fileNameTxt = file.split('/')[-1]
+                if (fileNameTxt.endswith(('.txt'))):
+                    self.listFileTxt.append(fileNameTxt)
+                else:
+                    showwarning(title='Warning', message='Please chose correct file *.txt')
+                    return False
+                    
+                pathFileWxt = file.split('.')[0] + ('.wxt')
+                fileNameWxt = fileNameTxt.split('.')[0] + ('.wxt')
+
+                if (os.path.exists(pathFileWxt)):
+                    self.listFileWxt.append(fileNameWxt)
+                else:
+                    showwarning(
+                        title='Warning',
+                        message="Files {} don't exist".format(fileNameWxt))
+
+                    return False
+
+            self.checkFileBakExist()
+
+            return True
+
 
     def checkFileInputExist(self):
         if (self.selectedFolder):
@@ -162,34 +226,25 @@ class FileProcessor(tk.Tk):
                 if (file.endswith(('.wxt'))):
                     self.listFileWxt.append(file)
                     self.flagWxt = True
-        else:
-            for file in self.fileSelection:
-                fileName = file.split('/')[-1]
 
-                if (fileName.endswith(('.txt'))):
-                    self.listFileTxt.append(fileName)
-                    self.flagTxt = True
-
-                if (file.endswith(('.wxt'))):
-                    self.listFileWxt.append(fileName)
-                    self.flagWxt = True
-
+            self.checkFileBakExist()
         if (self.flagTxt == False and self.flagWxt == True):
             showwarning(
-                    title='Warning',
-                    message="Files *.txt don't exist")
+                title='Warning',
+                message="Files *.txt don't exist")
+
             return False
 
         elif (self.flagWxt == False and self.flagTxt == True):
             showwarning(
-                    title='Warning',
-                    message="Files * .wxt don't exist")
+                title='Warning',
+                message="Files * .wxt don't exist")
             return False
 
         elif (self.flagWxt == False and self.flagTxt == False):
             showwarning(
-                    title='Warning',
-                    message="Files *.txt and *.wxt don't exist")
+                title='Warning',
+                message="Files *.txt and *.wxt don't exist")
             return False
 
         else:
@@ -201,25 +256,25 @@ class FileProcessor(tk.Tk):
             for fileName in self.listFileTxt:
                 # Creating file paths
                 pathFileTxt = self.folderSelection + '/' + fileName
-                pathFileRxt = self.folderSelection + '/' + fileName.split('.')[0] + '.rxt'
+                pathFileRxt = self.folderSelection + \
+                    '/' + fileName.split('.')[0] + '.rxt'
 
                 # Creating object read and write
                 readLinesTxt = open(pathFileTxt).readlines()
-                fileRxt = open(pathFileRxt,'w')
-                
+                fileRxt = open(pathFileRxt, 'w')
+
                 # Declare local variable
                 characterAddition = ''
                 characterIndex = -1
                 characterNumber = 1
-
                 # Loop file to get data line by line
                 for cnt, line in enumerate(readLinesTxt):
                     # Tool only add two characters: Example 'zz'
                     # If cnt > 701 lines, break writing file
                     if cnt > 701:
                         showwarning(
-                                title='Warning',
-                                message="File *.txt contains multiple lines (more than 701 lines), So wrong format file *.rxt ")
+                            title='Warning',
+                            message="File *.txt contains multiple lines (more than 701 lines), So wrong format file *.rxt ")
                         break
 
                     # Checking lines need to add character
@@ -234,19 +289,22 @@ class FileProcessor(tk.Tk):
                     if characterNumber == 1:
                         characterAddition = chr(97 + characterIndex)
                     elif characterNumber >= 2:
-                        characterAddition = chr(97 + characterNumber - 2) + chr(97 + characterIndex)
+                        characterAddition = chr(
+                            97 + characterNumber - 2) + chr(97 + characterIndex)
 
-                    # Formating output data 
-                    out_line = line.replace('\n','') + characterAddition + '\n'
+                    # Formating output data
+                    out_line = line.replace(
+                        '\n', '') + characterAddition + '\n'
 
                     # Writing a file Rxt
                     fileRxt.write(out_line)
-                
+
                 # Close a file
                 fileRxt.close()
 
         except Exception as bug:
-            showerror(title='Error',message='Please check the input file structure')
+            showerror(title='Error',
+                      message='Please check the input file structure')
 
     def generateFileSxt(self):
         try:
@@ -254,33 +312,37 @@ class FileProcessor(tk.Tk):
             for fileName in self.listFileTxt:
                 # Creating file paths
                 pathFileTxt = self.folderSelection + '/' + fileName
-                pathFileWxt = self.folderSelection+ '/' + fileName.split('.')[0] + '.wxt'
-                pathFileSxt = self.folderSelection + '/' + fileName.split('.')[0] + '.sxt'
+                pathFileWxt = self.folderSelection + \
+                    '/' + fileName.split('.')[0] + '.wxt'
+                pathFileSxt = self.folderSelection + \
+                    '/' + fileName.split('.')[0] + '.srt'
 
                 # Creating object read and write
                 readLinesTxt = open(pathFileTxt).readlines()
                 readLineWxt = open(pathFileWxt).readlines()
-                fileSxt = open(pathFileSxt,'w')
+                fileSxt = open(pathFileSxt, 'w')
 
                 # Loop file to get data line by line
                 for cnt, line in enumerate(readLinesTxt):
-                    tmp = line.replace('\n','').split('\t')[0]
+                    tmp = line.replace('\n', '').split('\t')[0]
 
                     # Getting integral part and fractional part
                     integralPart = tmp.split('.')[0]
                     fractionalPart = tmp.split('.')[1]
 
                     # Converting seconds to hours:minutes:seconds
-                    conversionResult = ('{},{}'.format(self.convertSecond2FormatTime(int(integralPart)),fractionalPart[0:3]))
+                    conversionResult = ('{},{}'.format(
+                        self.convertSecond2FormatTime(int(integralPart)), fractionalPart[0:3]))
 
                     # Only getting data of the first line, don't write
                     if cnt == 0:
                         previousConversionResult = conversionResult
                         continue
-                    
-                    # Formating output data 
-                    lineOutput = '{} --> {}\n'.format(previousConversionResult,conversionResult)
-                    
+
+                    # Formating output data
+                    lineOutput = '{} --> {}\n'.format(
+                        previousConversionResult, conversionResult)
+
                     # Writing a file Sxt
                     fileSxt.write('{}\n'.format(cnt))
                     fileSxt.write(lineOutput)
@@ -293,20 +355,38 @@ class FileProcessor(tk.Tk):
                 fileSxt.close()
 
         except Exception as bug:
-            showerror(title='Error',message='Please check the input file structure')
+            showerror(title='Error',
+                      message='Please check the input file structure')
 
-    def convertSecond2FormatTime(self,seconds):
+    def renameFileOutput(self):
+        for fileName in self.listFileTxt:
+            pathFileTxt = self.folderSelection + '/' + fileName
+            pathFileBak = self.folderSelection + \
+                '/' + fileName.split('.')[0] + '.bak'
+            if os.path.exists(pathFileTxt):
+                os.rename(pathFileTxt, pathFileBak)
+
+            pathFileRxt = self.folderSelection + \
+                '/' + fileName.split('.')[0] + '.rxt'
+            pathFileRxt2Txt = self.folderSelection + \
+                '/' + fileName.split('.')[0] + '.txt'
+            if os.path.exists(pathFileRxt):
+                os.rename(pathFileRxt, pathFileRxt2Txt)
+
+    def convertSecond2FormatTime(self, seconds):
         seconds = seconds % (24 * 3600)
         hour = seconds // 3600
         seconds %= 3600
         minutes = seconds // 60
         seconds %= 60
-        result = '{}:{}:{}'.format(str(hour).zfill(2),str(minutes).zfill(2),str(seconds).zfill(2))
+        result = '{}:{}:{}'.format(str(hour).zfill(2), str(
+            minutes).zfill(2), str(seconds).zfill(2))
         return result
- 
+
+
 def main():
     fileProcessor = FileProcessor()
     fileProcessor.mainloop()
-    
+
 if __name__ == '__main__':
     main()
